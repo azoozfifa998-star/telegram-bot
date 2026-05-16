@@ -1,10 +1,26 @@
 import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from flask import Flask
+from threading import Thread
 
 BOT_TOKEN = os.environ['BOT_TOKEN']
 CHANNEL_USERNAME = "@Taqdimat1"
 CHANNEL_LINK = "https://t.me/Taqdimat1"
+
+web_app = Flask('')
+
+@web_app.route('/')
+def home():
+    return "البوت شغال"
+
+def run_web():
+    port = int(os.environ.get('PORT', 10000))
+    web_app.run(host='0.0.0.0', port=port)
+
+def keep_alive():
+    t = Thread(target=run_web)
+    t.start()
 
 async def check_subscription(user_id, context):
     try:
@@ -43,6 +59,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer("لم تشترك بعد! اشترك في القناة أولاً", show_alert=True)
 
 def main():
+    keep_alive()
     app_bot = Application.builder().token(BOT_TOKEN).build()
     app_bot.add_handler(CommandHandler("start", start))
     app_bot.add_handler(CallbackQueryHandler(button_handler))
